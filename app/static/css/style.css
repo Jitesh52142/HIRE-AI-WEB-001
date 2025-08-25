@@ -1,0 +1,157 @@
+/* --- Crimson Elegance Theme Variables --- */
+:root {
+    --primary-color: #C82333; /* Rich Crimson */
+    --secondary-color: #4B6587; /* Slate Blue */
+    --accent-color: #D4A017; /* Soft Gold */
+    --background-color: #FAFBFC; /* Clean Off-White */
+    --text-color: #2D3748; /* Dark Grey */
+    --primary-light: #DC3545; /* Lighter Crimson */
+    --bs-primary: #C82333; /* Consistent Primary */
+    --bs-primary-rgb: 200, 35, 51; /* RGB for Primary */
+}
+
+/* General body styling */
+body {
+    background-color: var(--background-color);
+    color: var(--text-color);
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+main {
+    flex: 1;
+}
+
+/* --- Navbar & Header --- */
+.navbar-brand {
+    color: #FFFFFF !important;
+}
+
+.navbar-brand .fa-brain {
+    color: #2ECC71; /* Professional Green for logo */
+}
+
+.navbar .nav-link:hover {
+    color: #F1F5F9; /* Soft Blue-White on hover */
+}
+
+.navbar .admin-link {
+    color: var(--secondary-color); /* Slate Blue */
+    font-weight: bold;
+}
+
+.navbar .admin-link:hover {
+    color: #3F5673; /* Darker Slate Blue on hover */
+}
+
+.bg-primary {
+    background-color: var(--primary-color) !important;
+}
+
+.bg-primary-dark {
+    background-color: var(--bs-primary) !important;
+}
+
+.text-primary {
+    color: var(--bs-primary) !important;
+}
+
+.text-primary-dark {
+    color: var(--primary-color) !important;
+}
+
+/* --- Buttons --- */
+.btn-primary {
+    background-color: var(--bs-primary);
+    border-color: var(--bs-primary);
+}
+
+.btn-primary:hover {
+    background-color: var(--primary-light);
+    border-color: var(--primary-light);
+}
+
+.btn-secondary {
+    background-color: var(--secondary-color);
+    border-color: var(--secondary-color);
+}
+
+.btn-secondary:hover {
+    background-color: #3F5673; /* Darker Slate Blue */
+    border-color: #3F5673;
+}
+
+.btn-accent {
+    background-color: var(--accent-color);
+    border-color: var(--accent-color);
+    color: #2D3748; /* Dark Grey for contrast */
+}
+
+.btn-accent:hover {
+    background-color: #B88B14; /* Darker Soft Gold */
+    border-color: #B88B14;
+    color: #2D3748;
+}
+
+/* --- Forms & Cards --- */
+.card {
+    border: none;
+    border-radius: 1rem;
+}
+
+.card-header {
+    border-top-left-radius: 1rem;
+    border-top-right-radius: 1rem;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.25rem rgba(200, 35, 51, 0.25);
+}
+
+/* --- Multi-Step Form --- */
+.form-step {
+    display: none;
+}
+
+.form-step.active {
+    display: block;
+}
+
+/* --- Loader --- */
+#submitBtn .spinner-border {
+    margin-right: 0.5rem;
+}
+
+/* --- Jumbotron (hero section) --- */
+.jumbotron {
+    background: linear-gradient(135deg, var(--background-color), #FCE4E7); /* Subtle Crimson-Tinted Gradient */
+}
+
+.jumbotron .display-4 {
+    font-size: 2.5rem;
+    color: var(--text-color);
+}
+
+.jumbotron p.lead {
+    color: #5A6A7A; /* Muted Blue-Grey */
+}
+
+/* --- Portal Logo --- */
+.portal-logo {
+    max-width: 100px;
+    height: auto;
+    filter: grayscale(100%);
+    transition: filter 0.3s ease;
+}
+
+.portal-logo:hover {
+    filter: grayscale(0%);
+}
+
+/* --- Footer styling --- */
+footer {
+    border-top: 1px solid #E2E8F0; /* Light Grey-Blue border */
+}
