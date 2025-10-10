@@ -1284,7 +1284,7 @@
       {
         "json": {
           "headers": {
-            "host": "localhost:5678",
+            "host": "n8n.srv812138.hstgr.cloud",
             "user-agent": "python-requests/2.31.0",
             "accept-encoding": "gzip, deflate, zstd",
             "accept": "*/*",
@@ -1324,7 +1324,7 @@
             "submitted_by": "jiteshbawaskar05@gmail.com",
             "submitted_at": "2025-08-19T17:59:27.461908"
           },
-          "webhookUrl": "http://localhost:5678/webhook-test/48edfceb-6f2e-45f6-8147-6e49064f7626",
+          "webhookUrl": "https://n8n.srv812138.hstgr.cloud/webhook/hireai",
           "executionMode": "test"
         }
       }

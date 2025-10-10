@@ -88,11 +88,11 @@ def main_dashboard():
             try:
                 response = requests.post(webhook_url, json=form_data, timeout=10)
                 response.raise_for_status()
-                print("✅ Webhook triggered successfully:", response.text)
+                print("SUCCESS: Webhook triggered successfully:", response.text)
             except requests.exceptions.RequestException as e:
-                print("❌ Webhook error:", e)
+                print("ERROR: Webhook error:", e)
                 if hasattr(e, "response") and e.response is not None:
-                    print("❌ Webhook response:", e.response.text)
+                    print("ERROR: Webhook response:", e.response.text)
                 flash(f'Data saved, but failed to trigger automation: {e}', 'warning')
                 return redirect(url_for('candidates.candidate_insights'))
 

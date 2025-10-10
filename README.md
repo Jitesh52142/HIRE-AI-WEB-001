@@ -56,7 +56,7 @@ Hire AI is a sophisticated, AI-driven recruitment platform built with Flask, des
    MONGO_URI=your_mongodb_uri
 
    # n8n Webhook URL for form submissions
-   N8N_WEBHOOK_URL=your_n8n_webhook_url
+   N8N_WEBHOOK_URL=https://n8n.srv812138.hstgr.cloud/webhook/hireai
 
    # Admin User Credentials (used for first-time admin creation)
    ADMIN_EMAIL=your_admin_email

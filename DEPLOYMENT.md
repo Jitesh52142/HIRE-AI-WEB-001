@@ -37,7 +37,7 @@ This Flask application is configured for deployment on Vercel.
 | `MONGO_URI` | MongoDB connection string | `mongodb+srv://user:pass@cluster.mongodb.net/hire_ai` |
 | `ADMIN_EMAIL` | Admin user email | `admin@hireai.com` |
 | `ADMIN_PASSWORD` | Admin user password | `secure-password` |
-| `N8N_WEBHOOK_URL` | Webhook URL for automation | `https://your-n8n-instance.com/webhook` |
+| `N8N_WEBHOOK_URL` | Webhook URL for automation | `https://n8n.srv812138.hstgr.cloud/webhook/hireai` |
 
 ### Local Development
 
