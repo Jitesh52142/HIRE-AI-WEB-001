@@ -10,6 +10,15 @@
             <p class="mb-0">Complete the steps below to find your ideal candidate.</p>
         </div>
         <div class="card-body p-4 p-md-5">
+            <!-- Step Indicator -->
+            <div class="step-indicator">
+                <div class="step active" data-step="1">1</div>
+                <div class="step" data-step="2">2</div>
+                <div class="step" data-step="3">3</div>
+                <div class="step" data-step="4">4</div>
+                <div class="step" data-step="5">5</div>
+            </div>
+            
             <form id="multiStepForm" method="POST" action="{{ url_for('dashboard.main_dashboard') }}">
                 
                 <!-- STEP 1 -->
