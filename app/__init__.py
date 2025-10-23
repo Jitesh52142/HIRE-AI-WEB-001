@@ -40,6 +40,16 @@ def create_app(config_class=Config):
             print(f"Error loading user: {e}")
         return None
 
+    # Add template context processor to make current_user available globally
+    @app.context_processor
+    def inject_user():
+        try:
+            from flask_login import current_user
+            return dict(current_user=current_user)
+        except Exception as e:
+            print(f"Error injecting current_user: {e}")
+            return dict(current_user=None)
+
     # Register blueprints
     from .routes.main import main_bp
     from .routes.auth import auth_bp
