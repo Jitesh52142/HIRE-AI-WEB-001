@@ -55,48 +55,54 @@
 # hire_ai/app/routes/dashboard.py
 
 import requests
-from flask import Blueprint, render_template, request, redirect, url_for, flash, current_app
-from flask_login import login_required, current_user
+from flask import Blueprint, render_template, request, redirect, url_for, flash, current_app, jsonify
 from app import mongo
 from datetime import datetime
 
 dashboard_bp = Blueprint('dashboard', __name__)
 
 @dashboard_bp.route('/dashboard', methods=['GET', 'POST'])
-@login_required
 def main_dashboard():
-    if request.method == 'POST':
-        form_data = request.form.to_dict()
-        
-        # Add user and timestamp info, converting datetime to a string
-        form_data['submitted_by'] = current_user.email
-        form_data['submitted_at'] = datetime.utcnow().isoformat()
+    try:
+        if request.method == 'POST':
+            form_data = request.form.to_dict()
+            
+            # Add timestamp info (skip user info for now due to Flask-Login issues)
+            form_data['submitted_by'] = 'anonymous_user'  # Temporary fallback
+            form_data['submitted_at'] = datetime.utcnow().isoformat()
 
-        # 1. Save submission to MongoDB
-        try:
-            mongo.db.form_submissions.insert_one(form_data)
-        except Exception as e:
-            flash(f'Error saving data to database: {e}', 'danger')
-            return render_template('dashboard/dashboard.html')
-
-        # === FIX: remove _id before sending ===
-        form_data.pop('_id', None)
-
-        # 2. Push data to n8n webhook
-        webhook_url = current_app.config.get('N8N_WEBHOOK_URL')
-        if webhook_url:
+            # 1. Save submission to MongoDB
             try:
-                response = requests.post(webhook_url, json=form_data, timeout=10)
-                response.raise_for_status()
-                print("SUCCESS: Webhook triggered successfully:", response.text)
-            except requests.exceptions.RequestException as e:
-                print("ERROR: Webhook error:", e)
-                if hasattr(e, "response") and e.response is not None:
-                    print("ERROR: Webhook response:", e.response.text)
-                flash(f'Data saved, but failed to trigger automation: {e}', 'warning')
-                return redirect(url_for('candidates.candidate_insights'))
+                mongo.db.form_submissions.insert_one(form_data)
+            except Exception as e:
+                flash(f'Error saving data to database: {e}', 'danger')
+                return render_template('dashboard/dashboard.html')
 
-        flash('Your requirements have been submitted successfully!', 'success')
-        return redirect(url_for('candidates.candidate_insights'))
+            # === FIX: remove _id before sending ===
+            form_data.pop('_id', None)
 
-    return render_template('dashboard/dashboard.html')
+            # 2. Push data to n8n webhook
+            webhook_url = current_app.config.get('N8N_WEBHOOK_URL')
+            if webhook_url:
+                try:
+                    response = requests.post(webhook_url, json=form_data, timeout=10)
+                    response.raise_for_status()
+                    print("SUCCESS: Webhook triggered successfully:", response.text)
+                except requests.exceptions.RequestException as e:
+                    print("ERROR: Webhook error:", e)
+                    if hasattr(e, "response") and e.response is not None:
+                        print("ERROR: Webhook response:", e.response.text)
+                    flash(f'Data saved, but failed to trigger automation: {e}', 'warning')
+                    return redirect(url_for('main.index'))
+
+            flash('Your requirements have been submitted successfully!', 'success')
+            return redirect(url_for('main.index'))
+
+        return render_template('dashboard/dashboard.html')
+    except Exception as e:
+        print(f"Error in dashboard route: {e}")
+        return jsonify({
+            'error': 'Dashboard error',
+            'message': str(e),
+            'status': 'error'
+        }), 500

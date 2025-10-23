@@ -83,15 +83,71 @@ def test():
         except Exception as e:
             mongo_status = f"error: {str(e)}"
         
+        # Test webhook configuration
+        from flask import current_app
+        webhook_url = current_app.config.get('N8N_WEBHOOK_URL')
+        webhook_status = "configured" if webhook_url else "not_configured"
+        
         return jsonify({
             'status': 'test_successful',
             'message': 'Test endpoint working',
             'mongodb': mongo_status,
+            'webhook_url': webhook_url,
+            'webhook_status': webhook_status,
             'templates_exist': True,
             'flask_app': 'running'
         })
     except Exception as e:
         return jsonify({
             'status': 'test_failed',
+            'error': str(e)
+        }), 500
+
+@main_bp.route('/test-webhook')
+def test_webhook():
+    """Test webhook functionality"""
+    try:
+        from flask import current_app
+        import requests
+        
+        webhook_url = current_app.config.get('N8N_WEBHOOK_URL')
+        
+        if not webhook_url:
+            return jsonify({
+                'status': 'error',
+                'message': 'N8N_WEBHOOK_URL not configured'
+            }), 400
+        
+        # Send test data to webhook
+        test_data = {
+            'test': True,
+            'message': 'Test webhook from Hire AI',
+            'timestamp': datetime.utcnow().isoformat(),
+            'source': 'test_endpoint'
+        }
+        
+        try:
+            response = requests.post(webhook_url, json=test_data, timeout=10)
+            response.raise_for_status()
+            
+            return jsonify({
+                'status': 'success',
+                'message': 'Webhook test successful',
+                'webhook_url': webhook_url,
+                'response_status': response.status_code,
+                'response_text': response.text[:200]  # First 200 chars
+            })
+        except requests.exceptions.RequestException as e:
+            return jsonify({
+                'status': 'error',
+                'message': 'Webhook test failed',
+                'webhook_url': webhook_url,
+                'error': str(e)
+            }), 500
+            
+    except Exception as e:
+        return jsonify({
+            'status': 'error',
+            'message': 'Test webhook endpoint error',
             'error': str(e)
         }), 500
