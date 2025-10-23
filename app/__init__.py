@@ -13,6 +13,15 @@ login_manager = LoginManager()
 login_manager.login_view = 'auth.login' # Redirect to login page if user is not authenticated
 login_manager.login_message_category = 'info'
 
+# Define AnonymousUser class for Flask-Login
+from flask_login import AnonymousUserMixin
+class AnonymousUser(AnonymousUserMixin):
+    @property
+    def is_admin(self):
+        return False
+
+login_manager.anonymous_user = AnonymousUser
+
 def create_app(config_class=Config):
     """
     Application factory function to create and configure the Flask app.
@@ -45,10 +54,28 @@ def create_app(config_class=Config):
     def inject_user():
         try:
             from flask_login import current_user
-            return dict(current_user=current_user)
+            # Check if current_user is properly available
+            if hasattr(current_user, 'is_authenticated'):
+                return dict(current_user=current_user)
+            else:
+                # Create a mock anonymous user if Flask-Login isn't working
+                class AnonymousUser:
+                    is_authenticated = False
+                    is_active = False
+                    is_anonymous = True
+                    def get_id(self):
+                        return None
+                return dict(current_user=AnonymousUser())
         except Exception as e:
             print(f"Error injecting current_user: {e}")
-            return dict(current_user=None)
+            # Return a safe mock user object
+            class AnonymousUser:
+                is_authenticated = False
+                is_active = False
+                is_anonymous = True
+                def get_id(self):
+                    return None
+            return dict(current_user=AnonymousUser())
 
     # Register blueprints
     from .routes.main import main_bp
