@@ -52,30 +52,29 @@ def create_app(config_class=Config):
     # Add template context processor to make current_user available globally
     @app.context_processor
     def inject_user():
+        # Create a safe anonymous user that always works
+        class SafeAnonymousUser:
+            is_authenticated = False
+            is_active = False
+            is_anonymous = True
+            is_admin = False
+            
+            def get_id(self):
+                return None
+        
         try:
-            from flask_login import current_user
-            # Check if current_user is properly available
-            if hasattr(current_user, 'is_authenticated'):
-                return dict(current_user=current_user)
-            else:
-                # Create a mock anonymous user if Flask-Login isn't working
-                class AnonymousUser:
-                    is_authenticated = False
-                    is_active = False
-                    is_anonymous = True
-                    def get_id(self):
-                        return None
-                return dict(current_user=AnonymousUser())
+            # Try to get the real current_user from Flask-Login
+            from flask_login import current_user as flask_login_current_user
+            
+            # If we can access it and it's authenticated, use it
+            if hasattr(flask_login_current_user, 'is_authenticated') and flask_login_current_user.is_authenticated:
+                return dict(current_user=flask_login_current_user)
         except Exception as e:
-            print(f"Error injecting current_user: {e}")
-            # Return a safe mock user object
-            class AnonymousUser:
-                is_authenticated = False
-                is_active = False
-                is_anonymous = True
-                def get_id(self):
-                    return None
-            return dict(current_user=AnonymousUser())
+            # If Flask-Login fails, log it but continue
+            print(f"Flask-Login current_user not available: {e}")
+        
+        # Return safe anonymous user as fallback
+        return dict(current_user=SafeAnonymousUser())
 
     # Register blueprints
     from .routes.main import main_bp
