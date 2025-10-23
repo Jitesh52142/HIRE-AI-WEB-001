@@ -11,7 +11,7 @@ class Config:
     FLASK_APP = 'run.py'
     
     # Database
-    MONGO_URI = os.environ.get('MONGO_URI')
+    MONGO_URI = os.environ.get('MONGO_URI') or 'mongodb://localhost:27017/hire_ai_fallback'
 
     # Webhook
     N8N_WEBHOOK_URL = os.environ.get('N8N_WEBHOOK_URL')
