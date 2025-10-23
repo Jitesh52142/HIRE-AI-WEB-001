@@ -46,9 +46,8 @@ def create_app(config_class=Config):
     app.register_blueprint(candidates_bp)
     app.register_blueprint(admin_bp, url_prefix='/admin')
 
-    with app.app_context():
-        # Create a default admin user if one doesn't exist
-        create_admin_user_if_not_exists()
+    # Note: Admin user creation moved to lazy initialization
+    # to avoid blocking deployment startup
 
     return app
 

@@ -62,3 +62,13 @@ def logout():
     flash('You have been logged out.', 'info')
     return redirect(url_for('main.index'))
 
+@auth_bp.route('/create-admin')
+def create_admin():
+    """Create admin user if it doesn't exist (for deployment setup)"""
+    from app import create_admin_user_if_not_exists
+    try:
+        create_admin_user_if_not_exists()
+        return "Admin user created successfully!", 200
+    except Exception as e:
+        return f"Error creating admin user: {str(e)}", 500
+
