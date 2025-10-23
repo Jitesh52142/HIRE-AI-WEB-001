@@ -78,10 +78,16 @@ def test():
     try:
         # Test MongoDB connection
         mongo_status = "connected"
+        mongo_details = {}
         try:
-            mongo.db.admin.command('ping')
+            result = mongo.db.admin.command('ping')
+            mongo_details['ping'] = 'success'
+            # Try to count users
+            user_count = mongo.db.users.count_documents({})
+            mongo_details['user_count'] = user_count
         except Exception as e:
             mongo_status = f"error: {str(e)}"
+            mongo_details['error'] = str(e)
         
         # Test webhook configuration
         from flask import current_app
@@ -92,6 +98,7 @@ def test():
             'status': 'test_successful',
             'message': 'Test endpoint working',
             'mongodb': mongo_status,
+            'mongodb_details': mongo_details,
             'webhook_url': webhook_url,
             'webhook_status': webhook_status,
             'templates_exist': True,

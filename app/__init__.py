@@ -52,29 +52,22 @@ def create_app(config_class=Config):
     # Add template context processor to make current_user available globally
     @app.context_processor
     def inject_user():
-        # Create a safe anonymous user that always works
-        class SafeAnonymousUser:
-            is_authenticated = False
-            is_active = False
-            is_anonymous = True
-            is_admin = False
+        from flask import session
+        
+        # Create user object based on session
+        class SessionUser:
+            def __init__(self):
+                self.is_authenticated = session.get('logged_in', False)
+                self.is_active = session.get('logged_in', False)
+                self.is_anonymous = not session.get('logged_in', False)
+                self.is_admin = session.get('is_admin', False)
+                self.email = session.get('user_email', '')
+                self.id = session.get('user_id', '')
             
             def get_id(self):
-                return None
+                return self.id
         
-        try:
-            # Try to get the real current_user from Flask-Login
-            from flask_login import current_user as flask_login_current_user
-            
-            # If we can access it and it's authenticated, use it
-            if hasattr(flask_login_current_user, 'is_authenticated') and flask_login_current_user.is_authenticated:
-                return dict(current_user=flask_login_current_user)
-        except Exception as e:
-            # If Flask-Login fails, log it but continue
-            print(f"Flask-Login current_user not available: {e}")
-        
-        # Return safe anonymous user as fallback
-        return dict(current_user=SafeAnonymousUser())
+        return dict(current_user=SessionUser())
 
     # Register blueprints
     from .routes.main import main_bp

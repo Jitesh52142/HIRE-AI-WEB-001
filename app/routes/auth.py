@@ -1,6 +1,7 @@
-from flask import Blueprint, render_template, redirect, url_for, flash, request
+from flask import Blueprint, render_template, redirect, url_for, flash, request, session
 from app import mongo, bcrypt
 from app.models.user import User
+from datetime import datetime
 
 auth_bp = Blueprint('auth', __name__)
 
@@ -11,36 +12,48 @@ def register():
         # This avoids Flask-Login issues in serverless environment
 
         if request.method == 'POST':
-            email = request.form.get('email').lower()
+            email = request.form.get('email')
             password = request.form.get('password')
+            
+            if not email or not password:
+                flash('Email and password are required.', 'danger')
+                return render_template('auth/register.html')
+            
+            email = email.lower().strip()
 
             # Check if user already exists
+            user_exists = False
             try:
-                if mongo.db.users.find_one({'email': email}):
-                    flash('An account with this email already exists. Please log in.', 'warning')
-                    return redirect(url_for('auth.login'))
+                existing_user = mongo.db.users.find_one({'email': email})
+                if existing_user:
+                    user_exists = True
             except Exception as db_error:
                 print(f"Database error checking user: {db_error}")
-                # Continue with registration even if DB check fails
-                print("Continuing with registration despite DB check failure")
+                # Continue with registration if DB check fails
 
-            hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
-            
-            # Use email as the _id for simplicity and uniqueness
+            if user_exists:
+                flash('An account with this email already exists. Please log in.', 'warning')
+                return redirect(url_for('auth.login'))
+
+            # Hash password and create user
             try:
-                mongo.db.users.insert_one({
+                hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
+                
+                user_data = {
                     '_id': email,
                     'email': email,
                     'password': hashed_password,
-                    'is_admin': False # Default users are not admins
-                })
-                flash('Your account has been created! You are now able to log in.', 'success')
+                    'is_admin': False,
+                    'created_at': datetime.utcnow().isoformat()
+                }
+                
+                mongo.db.users.insert_one(user_data)
+                flash('Your account has been created successfully! You can now log in.', 'success')
                 return redirect(url_for('auth.login'))
+                
             except Exception as db_error:
                 print(f"Database error creating user: {db_error}")
-                # Show success message even if DB fails (for demo purposes)
-                flash('Registration completed! (Note: Database temporarily unavailable, but form processed)', 'warning')
-                return redirect(url_for('auth.login'))
+                flash('Registration failed. Please try again or contact support.', 'danger')
 
         return render_template('auth/register.html')
     except Exception as e:
@@ -59,24 +72,39 @@ def login():
         # This avoids Flask-Login issues in serverless environment
 
         if request.method == 'POST':
-            email = request.form.get('email').lower()
+            email = request.form.get('email')
             password = request.form.get('password')
+            
+            if not email or not password:
+                flash('Email and password are required.', 'danger')
+                return render_template('auth/login.html')
+            
+            email = email.lower().strip()
             
             try:
                 user_doc = mongo.db.users.find_one({'email': email})
 
                 if user_doc and bcrypt.check_password_hash(user_doc['password'], password):
-                    # For now, just show success message without actual login
-                    # This avoids Flask-Login issues in serverless environment
-                    flash('Login successful! (Note: Full login functionality will be available after proper setup)', 'success')
-                    return redirect(url_for('main.index'))
+                    # Create session for the user
+                    session['user_id'] = user_doc['_id']
+                    session['user_email'] = user_doc['email']
+                    session['is_admin'] = user_doc.get('is_admin', False)
+                    session['logged_in'] = True
+                    
+                    flash('Login successful! Welcome to Hire AI.', 'success')
+                    
+                    # Redirect to dashboard if available, otherwise to home
+                    next_page = request.args.get('next')
+                    if next_page:
+                        return redirect(next_page)
+                    else:
+                        return redirect(url_for('dashboard.main_dashboard') if user_doc.get('is_admin') else url_for('main.index'))
                 else:
-                    flash('Login Unsuccessful. Please check email and password.', 'danger')
+                    flash('Invalid email or password. Please try again.', 'danger')
+                    
             except Exception as db_error:
                 print(f"Database error during login: {db_error}")
-                # Allow demo login even if database is unavailable
-                flash('Demo login successful! (Note: Database temporarily unavailable)', 'warning')
-                return redirect(url_for('main.index'))
+                flash('Login service temporarily unavailable. Please try again later.', 'danger')
 
         return render_template('auth/login.html')
     except Exception as e:
@@ -91,11 +119,13 @@ def login():
 @auth_bp.route('/logout')
 def logout():
     try:
-        # Simple logout without Flask-Login for now
-        flash('You have been logged out.', 'info')
+        # Clear the session
+        session.clear()
+        flash('You have been logged out successfully.', 'info')
         return redirect(url_for('main.index'))
     except Exception as e:
         print(f"Error during logout: {e}")
+        session.clear()  # Clear session anyway
         flash('Logout completed.', 'info')
         return redirect(url_for('main.index'))
 
