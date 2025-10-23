@@ -7,7 +7,7 @@ load_dotenv()
 class Config:
     """Set Flask configuration from .env file."""
     # General Config
-    SECRET_KEY = os.environ.get('SECRET_KEY')
+    SECRET_KEY = os.environ.get('SECRET_KEY') or 'hire-ai-fallback-secret-key-for-development-only-change-in-production'
     FLASK_APP = 'run.py'
     
     # Database
