@@ -21,16 +21,23 @@ def create_app(config_class=Config):
     app.config.from_object(config_class)
 
     # Initialize extensions with the app
-    mongo.init_app(app)
-    bcrypt.init_app(app)
-    login_manager.init_app(app)
+    try:
+        mongo.init_app(app)
+        bcrypt.init_app(app)
+        login_manager.init_app(app)
+    except Exception as e:
+        print(f"Warning: Error initializing extensions: {e}")
+        # Continue with app creation even if some extensions fail
 
     @login_manager.user_loader
     def load_user(user_id):
         """Load user from the database."""
-        user_json = mongo.db.users.find_one({'_id': user_id})
-        if user_json:
-            return User(user_json)
+        try:
+            user_json = mongo.db.users.find_one({'_id': user_id})
+            if user_json:
+                return User(user_json)
+        except Exception as e:
+            print(f"Error loading user: {e}")
         return None
 
     # Register blueprints
@@ -53,20 +60,24 @@ def create_app(config_class=Config):
 
 def create_admin_user_if_not_exists():
     """Checks for and creates a default admin user from .env credentials."""
-    admin_email = os.environ.get('ADMIN_EMAIL')
-    admin_password = os.environ.get('ADMIN_PASSWORD')
+    try:
+        admin_email = os.environ.get('ADMIN_EMAIL')
+        admin_password = os.environ.get('ADMIN_PASSWORD')
 
-    if not admin_email or not admin_password:
-        print("Warning: ADMIN_EMAIL or ADMIN_PASSWORD not set in .env. Skipping admin creation.")
-        return
+        if not admin_email or not admin_password:
+            print("Warning: ADMIN_EMAIL or ADMIN_PASSWORD not set in environment. Skipping admin creation.")
+            return
 
-    # Check if admin user already exists
-    if not mongo.db.users.find_one({'email': admin_email}):
-        hashed_password = bcrypt.generate_password_hash(admin_password).decode('utf-8')
-        mongo.db.users.insert_one({
-            '_id': admin_email, # Using email as a unique ID
-            'email': admin_email,
-            'password': hashed_password,
-            'is_admin': True
-        })
-        print(f"Admin user '{admin_email}' created successfully.")
+        # Check if admin user already exists
+        if not mongo.db.users.find_one({'email': admin_email}):
+            hashed_password = bcrypt.generate_password_hash(admin_password).decode('utf-8')
+            mongo.db.users.insert_one({
+                '_id': admin_email, # Using email as a unique ID
+                'email': admin_email,
+                'password': hashed_password,
+                'is_admin': True
+            })
+            print(f"Admin user '{admin_email}' created successfully.")
+    except Exception as e:
+        print(f"Error creating admin user: {e}")
+        # Don't crash the app if admin creation fails

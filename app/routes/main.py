@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, flash, redirect, url_for
+from flask import Blueprint, render_template, request, flash, redirect, url_for, jsonify
 from app import mongo
 from datetime import datetime
 
@@ -34,3 +34,11 @@ def contact():
         return redirect(url_for('main.contact'))
 
     return render_template('main/contact.html')
+
+@main_bp.route('/health')
+def health():
+    """Health check endpoint for Vercel"""
+    return jsonify({
+        'status': 'healthy',
+        'message': 'Hire AI app is running successfully!'
+    })
